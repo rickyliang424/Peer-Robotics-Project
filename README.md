@@ -49,8 +49,8 @@ rviz2 -d config.rviz
 
 Result:
 <div align="center">
-  <img src="./asset/demo_0.gif" width="40%" style="display: inline-block; margin-right: 5%;">
-  <img src="./asset/demo_1.gif" width="40%" style="display: inline-block;">
+  <img src="asset/demo_0.gif" width="40%" style="display: inline-block; margin-right: 5%;">
+  <img src="asset/demo_1.gif" width="40%" style="display: inline-block;">
 </div>
 
 ## Install
