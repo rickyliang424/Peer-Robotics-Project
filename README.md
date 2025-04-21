@@ -2,7 +2,7 @@
 
 The objective of this assignment is to develop a pallet detection & ground segmentation application in ROS2 for a manufacturing or warehousing environment. The solution is optimized for deployment on edge devices like the NVIDIA Jetson AGX Orin, ensuring real-time performance suitable for mobile robotics applications.
 
-## 1. Demo
+## Demo
 
 Download the rosbag from the [link](https://drive.google.com/drive/folders/1xSqKa55QrNGufLRQZAbp0KFGYr9ecqgT?usp=sharing)
 
@@ -21,7 +21,7 @@ Then open another terminal, open visualization tool:
 rviz2 -d ./config.rviz
 ```
 
-## 2. Docker
+## Docker
 
 Build docker image:
 ``` bash
