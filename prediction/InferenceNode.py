@@ -5,7 +5,8 @@ import numpy as np
 from rclpy.node import Node
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-from ultralytics import YOLO, SAM, FastSAM
+from ultralytics import YOLO, FastSAM
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy
 
 import torch
 from copy import deepcopy
@@ -15,13 +16,14 @@ from ultralytics.utils.plotting import Annotator, colors
 class InferenceNode(Node):
     def __init__(self):
         super().__init__('inference_node')
-        self.subscription = self.create_subscription(Image, '/robot1/zed2i/left/image_rect_color', self.image_callback, 10)
+        self.qos_profile = QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, depth=10)
+        self.subscription = self.create_subscription(Image, '/robot1/zed2i/left/image_rect_color', self.image_callback, self.qos_profile)
         self.publisher_det = self.create_publisher(Image, '/pallet_detection', 10)
         self.publisher_seg = self.create_publisher(Image, '/ground_segmentation', 10)
         self.bridge = CvBridge()
 
-        self.model_det = YOLO("./models/best4.engine", task='detect')
-        self.model_seg = FastSAM("./models/FastSAM-s.engine")
+        self.model_det = YOLO("./models/best.pt", task='detect')
+        self.model_seg = FastSAM("./models/FastSAM-s.pt")
         self.get_logger().info("InferenceNode initialized.")
     
     def annotation(self, img, type):
@@ -56,7 +58,10 @@ class InferenceNode(Node):
                 
         # Segmentation with detection box
         results_seg = self.model_seg(img, imgsz=640, bboxes=box)
-        self.res.boxes = self.res.boxes[cls == 1.0]
+        conf = self.res.boxes.conf.cpu().numpy()
+        # condition = np.all([cls == 1, conf >= 0.4], axis=0)
+        condition = cls == 1
+        self.res.boxes = self.res.boxes[condition]
         self.res.masks = results_seg[0].masks
         
         output_img_det = self.annotation(img, 'det')
@@ -71,13 +76,10 @@ class InferenceNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = InferenceNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        print("Interrupted by user.")
-        os.remove("./temp.jpg")
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    os.remove("./temp.jpg")
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

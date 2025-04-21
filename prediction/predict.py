@@ -10,10 +10,13 @@ from ultralytics.utils.plotting import Annotator, colors
 
 def plot_annotates(img, res, savepath, show):
     annotator = Annotator(deepcopy(img), None, None, "Arial.ttf", False, example='')
+    
+    ## add ground segmentation masks
     img = LetterBox(res.masks.shape[1:])(image=annotator.result())
     im_gpu = (torch.as_tensor(img, dtype=torch.float16, device=res.masks.data.device).permute(2,0,1).flip(0).contiguous()/255)
     annotator.masks(res.masks.data, colors=[colors(1, True)], im_gpu=im_gpu)
     
+    ## add pallet detection boxes
     for i, d in enumerate(reversed(res.boxes)):
         d_conf, id = float(d.conf), None if d.id is None else int(d.id.item())
         name = ("" if id is None else f"id:{id} ") + res.names[1]
@@ -47,7 +50,10 @@ def inference(model_det, model_seg, files, savepath, show):
         results_seg = model_seg(img, imgsz=640, bboxes=box)
         
         ## Process results list
-        res.boxes = res.boxes[cls == 1]
+        conf = res.boxes.conf.cpu().numpy()
+        # condition = np.all([cls == 1, conf >= 0.4], axis=0)
+        condition = cls == 1
+        res.boxes = res.boxes[condition]
         res.masks = results_seg[0].masks
         
         os.makedirs(savepath, exist_ok=True)
@@ -55,16 +61,11 @@ def inference(model_det, model_seg, files, savepath, show):
         print(f'\nFinish {file}\n\n')
 
 def main():
-    # files = ["../bag_imgs/frame_000000.jpg", "../bag_imgs/frame_000016.jpg"]
     files = ["../bag_imgs/" + file for file in os.listdir('../bag_imgs')]
     show = False
     savepath = "./res/"
     
-    model_det = YOLO("./models/best4.pt")
-    # model_det = YOLO("./models/best5.pt")
-    # model_det = YOLO("./models/best6.pt")
-    # model_seg = SAM("./models/sam2.1_t.pt")
-    # model_seg = SAM("./models/mobile_sam.pt")
+    model_det = YOLO("./models/best.pt")
     model_seg = FastSAM("./models/FastSAM-s.pt")
 
     inference(model_det, model_seg, files, savepath, show)

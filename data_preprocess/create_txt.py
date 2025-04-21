@@ -20,7 +20,7 @@ while i < len(annotations):
     if j < len(annotations) and annotations[i]['image_id'] == annotations[j]['image_id']:
         j += 1
     else:
-        with open(savepath + image_dict[annotations[i]['image_id']]['path'][10:-4] + ".txt", "w") as file:
+        with open(savepath + image_dict[annotations[i]['image_id']]['file_name'][:-4] + ".txt", "w") as file:
             for k in range(i,j):
                 width = image_dict[annotations[k]['image_id']]['width']
                 height = image_dict[annotations[k]['image_id']]['height']

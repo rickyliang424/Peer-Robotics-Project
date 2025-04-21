@@ -5,7 +5,7 @@ import argparse
 class Trainer:
     def __init__(self):
         self.project_folder = Path(__file__).resolve().parent
-        self.model_config = Path(self.project_folder, "yolo11m.yaml")
+        self.model_config = Path(self.project_folder, "yolo11s.yaml")
         self.data_config = Path(self.project_folder, "pallets.yaml")
         self.setup()
 
@@ -22,26 +22,27 @@ class Trainer:
                     imgsz = 640,
                     device = [0],
                     batch = 4,
-                    epochs = 100,
+                    epochs = 200,
                     amp = True,
                     save = True,
                     workers = 8,
                     verbose = True,
                     val = True,
-                    optimizer = 'auto',
-                    # optimizer = 'AdamW',
-                    # lr0 = 2e-5,
-                    # lrf = 0.01,
-                    # momentum = 0.9,
-                    # weight_decay = 0.001,
+                    # optimizer = 'auto',
+                    optimizer = 'AdamW',
+                    lr0 = 0.002,
+                    lrf = 0.01,
+                    momentum = 0.9,
+                    weight_decay = 0.001,
                     hsv_h = 0.02,
                     hsv_s = 0.8,
                     hsv_v = 0.5,
-                    translate = 0.0,
+                    translate = 0.1,
                     scale = 0.2,
-                    shear = 1.0,
-                    perspective = 0.0001,
+                    shear = 5.0,
+                    perspective = 0.0005,
                     fliplr = 0.5,
+                    mixup = 0.2,
                     )
         
     def validate(self, model_path):
